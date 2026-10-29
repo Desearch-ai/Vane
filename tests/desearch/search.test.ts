@@ -154,6 +154,22 @@ test('routes by config and preserves default search options', async () => {
   await search('optional query', opts);
   assert.deepEqual(desearch.mock.calls[0].arguments, ['optional query']);
   assert.equal(fallback.mock.callCount(), 1);
-  backend = 'invalid';
-  await assert.rejects(search('q'), /Unsupported web search backend/);
+});
+
+test('unknown and empty backends fall back to searxng with search options', async () => {
+  const result = { results: [], suggestions: ['suggestion'] };
+  const fallback = mock.fn(async (_query: string, _opts?: unknown) => result);
+  const desearch = mock.fn(async (_query: string) => result);
+  const opts = { categories: ['general'], language: 'en', pageno: 2 };
+
+  for (const backend of ['unknown', '']) {
+    const search = createWebSearch(() => backend, fallback, desearch);
+    assert.equal(await search('fallback query', opts), result);
+  }
+
+  assert.equal(fallback.mock.callCount(), 2);
+  for (const call of fallback.mock.calls) {
+    assert.deepEqual(call.arguments, ['fallback query', opts]);
+  }
+  assert.equal(desearch.mock.callCount(), 0);
 });

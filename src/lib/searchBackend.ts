@@ -19,6 +19,5 @@ export const createWebSearch =
   async (query: string, opts?: SearxngSearchOptions) => {
     const backend = getBackend();
     if (backend === 'desearch') return desearch(query);
-    if (backend === 'searxng') return defaultSearch(query, opts);
-    throw new Error('Unsupported web search backend');
+    return defaultSearch(query, opts);
   };
